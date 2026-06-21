@@ -13,6 +13,7 @@ import { generateWeeklyReport, type WeeklyReportData } from '@/lib/weeklyReport'
 
 export type GamePhase =
   | 'title'
+  | 'loading'
   | 'onboarding'
   | 'scene'
   | 'afternoon_event'
@@ -123,6 +124,7 @@ interface GameState {
   dismissWeeklyReport: () => void;
   resetGame: () => void;
   setTransitioning: (v: boolean) => void;
+  setGamePhase: (phase: GamePhase) => void;
   
   // ─── Computed getters ────────────────────────────────────────────
   getCurrentScene: () => SceneConfig | null;
@@ -163,7 +165,7 @@ export const useGameStore = create<GameState>()(
       // ─── Actions ────────────────────────────────────────────────
 
       startGame: () => {
-        set({ gamePhase: 'onboarding' });
+        set({ gamePhase: 'loading' });
       },
 
       completeOnboarding: (playerName: string) => {
@@ -400,6 +402,10 @@ export const useGameStore = create<GameState>()(
 
       setTransitioning: (v: boolean) => {
         set({ isTransitioning: v });
+      },
+
+      setGamePhase: (phase: GamePhase) => {
+        set({ gamePhase: phase });
       },
 
       // ─── Computed ────────────────────────────────────────────────
