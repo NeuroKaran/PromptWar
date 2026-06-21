@@ -1,0 +1,128 @@
+{
+  "morning": {
+    "environment": "bedroom",
+    "background": "/assets/Home.png",
+    "title": "Morning Routine",
+    "steps": [
+      {
+        "id": "light_source",
+        "prompt": "The sun peeks through your curtains. How do you light your room?",
+        "choices": [
+          { "id": "light_natural", "label": "Open the curtains", "emoji": "☀️", "co2": 0, "next": "shower" },
+          { "id": "light_artificial", "label": "Turn on the lamp", "emoji": "💡", "co2": null, "next": "light_grid_type" }
+        ]
+      },
+      {
+        "id": "light_grid_type",
+        "prompt": "What powers your lamp?",
+        "choices": [
+          { "id": "light_renewable", "label": "Renewable grid", "emoji": "🌱", "co2": 1, "next": "shower" },
+          { "id": "light_fossil", "label": "Fossil-fuel grid", "emoji": "🏭", "co2": 4, "next": "shower" }
+        ]
+      },
+      {
+        "id": "shower",
+        "prompt": "Time to freshen up. What kind of shower?",
+        "choices": [
+          { "id": "shower_cold_short", "label": "Cold, 2 minutes", "emoji": "🧊", "co2": 1, "next": "breakfast" },
+          { "id": "shower_hot_long", "label": "Hot, 10 minutes", "emoji": "🔥", "co2": 6, "next": "breakfast" }
+        ]
+      },
+      {
+        "id": "breakfast",
+        "prompt": "Your stomach rumbles. What's for breakfast?",
+        "choices": [
+          { "id": "bf_oats", "label": "Local oats", "emoji": "🥣", "co2": 1, "next": "END" },
+          { "id": "bf_eggs", "label": "Eggs & toast", "emoji": "🍳", "co2": 4, "next": "END" },
+          { "id": "bf_cereal", "label": "Packaged cereal", "emoji": "🥡", "co2": 5, "next": "END" },
+          { "id": "bf_skip", "label": "Skip breakfast", "emoji": "⏭️", "co2": 0, "next": "END" }
+        ]
+      }
+    ]
+  },
+  "commute": {
+    "environment": "street",
+    "background": "/assets/Map.png",
+    "title": "Morning Commute",
+    "steps": [
+      {
+        "id": "mode",
+        "prompt": "Time to head to work. How do you get there?",
+        "choices": [
+          { "id": "commute_bike", "label": "Walk / Cycle", "emoji": "🚲", "co2": 0, "next": "END" },
+          { "id": "commute_transit", "label": "Public transit", "emoji": "🚌", "co2": null, "next": "transit_type" },
+          { "id": "commute_car", "label": "Drive a car", "emoji": "🚗", "co2": null, "next": "car_type" },
+          { "id": "commute_wfh", "label": "Work from home", "emoji": "🏠", "co2": 0, "next": "home_energy" }
+        ]
+      },
+      {
+        "id": "transit_type",
+        "prompt": "Which type of transit?",
+        "choices": [
+          { "id": "transit_electric", "label": "Electric bus/metro", "emoji": "⚡", "co2": 2, "next": "END" },
+          { "id": "transit_diesel", "label": "Diesel bus", "emoji": "⛽", "co2": 5, "next": "END" }
+        ]
+      },
+      {
+        "id": "car_type",
+        "prompt": "What car, and riding solo?",
+        "choices": [
+          { "id": "car_ev_solo", "label": "EV, solo", "emoji": "🔋", "co2": 4, "next": "END" },
+          { "id": "car_ev_pool", "label": "EV, carpool", "emoji": "🔋👥", "co2": 2, "next": "END" },
+          { "id": "car_petrol_solo", "label": "Petrol, solo", "emoji": "⛽", "co2": 18, "next": "END" },
+          { "id": "car_petrol_pool", "label": "Petrol, carpool", "emoji": "⛽👥", "co2": 9, "next": "END" }
+        ]
+      },
+      {
+        "id": "home_energy",
+        "prompt": "Working from home — what powers your setup?",
+        "choices": [
+          { "id": "home_solar", "label": "Solar / renewable", "emoji": "☀️", "co2": 2, "next": "END" },
+          { "id": "home_grid", "label": "Standard grid", "emoji": "🔌", "co2": 6, "next": "END" }
+        ]
+      }
+    ]
+  },
+  "lunch": {
+    "environment": "cafeteria",
+    "background": "/assets/Cafe.png",
+    "title": "Lunch Break",
+    "steps": [
+      {
+        "id": "meal",
+        "prompt": "Lunchtime! What are you eating?",
+        "choices": [
+          { "id": "lunch_homemade", "label": "Home-cooked plant meal", "emoji": "🥗", "co2": 2, "next": "END" },
+          { "id": "lunch_restaurant_veg", "label": "Restaurant (veg)", "emoji": "🍽️", "co2": 5, "next": "END" },
+          { "id": "lunch_restaurant_nonveg", "label": "Restaurant (non-veg)", "emoji": "🥩", "co2": 9, "next": "END" },
+          { "id": "lunch_fastfood", "label": "Fast food", "emoji": "🍔", "co2": 12, "next": "END" },
+          { "id": "lunch_delivery", "label": "Food delivery", "emoji": "🛵", "co2": 14, "next": "END" }
+        ]
+      }
+    ]
+  },
+  "evening": {
+    "environment": "living_room",
+    "background": "/assets/Home.png",
+    "title": "Evening Wind-Down",
+    "steps": [
+      {
+        "id": "activity",
+        "prompt": "You're home for the evening. How do you unwind?",
+        "choices": [
+          { "id": "evening_stream", "label": "Stream / TV", "emoji": "📺", "co2": 4, "next": "charging" },
+          { "id": "evening_read", "label": "Read a book", "emoji": "📖", "co2": 1, "next": "charging" },
+          { "id": "evening_socialize", "label": "Socialize outside", "emoji": "👋", "co2": 0, "next": "charging" }
+        ]
+      },
+      {
+        "id": "charging",
+        "prompt": "Before bed — your devices:",
+        "choices": [
+          { "id": "charge_unplug", "label": "Unplug when full", "emoji": "🔌", "co2": 0, "next": "END" },
+          { "id": "charge_overnight", "label": "Leave plugged in", "emoji": "🔋", "co2": 2, "next": "END" }
+        ]
+      }
+    ]
+  }
+}

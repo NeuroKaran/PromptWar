@@ -1,0 +1,52 @@
+{
+  "npc_smog_warning_light": {
+    "speaker": "Eco Guide",
+    "lines": [
+      "⚠️ Hey, I've noticed you've been using fossil-fuel lighting a lot lately...",
+      "The skies are getting hazy. Maybe try opening those curtains tomorrow?"
+    ]
+  },
+  "npc_celebrate_streak": {
+    "speaker": "Eco Guide",
+    "lines": [
+      "🎉 Amazing! You've been on a clean streak!",
+      "Look — the trees are growing back and the water is clearing up. Keep it going!"
+    ]
+  },
+  "npc_urgent_polluted": {
+    "speaker": "Eco Guide",
+    "lines": [
+      "🚨 This is serious. The world is heavily polluted.",
+      "Every choice matters now. Even small changes can start turning things around."
+    ]
+  },
+  "npc_encourage_pristine": {
+    "speaker": "Eco Guide",
+    "lines": [
+      "🌿 Beautiful day! Your world is looking pristine.",
+      "You're living proof that sustainable choices make a real difference!"
+    ]
+  },
+  "npc_tips": {
+    "pristine": [
+      "🌳 The air is fresh and the water sparkles. Your world thanks you!",
+      "🦋 Butterflies are returning to the garden. Nature is thriving!",
+      "🌻 Every clean choice adds beauty to your world. Keep going!"
+    ],
+    "fair": [
+      "🌤️ Things are looking okay, but there's room for improvement.",
+      "💪 A few more green choices and you'll see real change!",
+      "🌱 Small steps lead to big transformations. You've got this!"
+    ],
+    "degraded": [
+      "🌫️ The air is getting thick. Your choices are starting to show...",
+      "🏭 Smoke is rising. Consider greener alternatives tomorrow.",
+      "⚡ Time to rethink some habits. The world needs your help!"
+    ],
+    "polluted": [
+      "😷 The smog is heavy today. Something needs to change.",
+      "🌑 The sky is grey and the water is murky. But it's not too late!",
+      "🆘 Critical pollution levels. Every green choice is a lifeline."
+    ]
+  }
+}

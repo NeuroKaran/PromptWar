@@ -1,0 +1,66 @@
+[
+  {
+    "id": "party_invite",
+    "title": "Party Invite",
+    "prompt": "Your friend invites you to a party across town tonight!",
+    "background": "/assets/Map.png",
+    "choices": [
+      { "id": "party_uber", "label": "Uber there", "emoji": "🚕", "co2": 12 },
+      { "id": "party_metro", "label": "Take the metro", "emoji": "🚇", "co2": 3 },
+      { "id": "party_skip", "label": "Skip it", "emoji": "🏠", "co2": 0 }
+    ]
+  },
+  {
+    "id": "ev_charger",
+    "title": "Office Perk",
+    "prompt": "Your office offers free EV charger access today!",
+    "background": "/assets/Office.png",
+    "choices": [
+      { "id": "ev_use", "label": "Use it", "emoji": "⚡", "co2": -2 },
+      { "id": "ev_skip", "label": "Don't need it", "emoji": "👋", "co2": 0 }
+    ]
+  },
+  {
+    "id": "meeting_room",
+    "title": "Meeting Dilemma",
+    "prompt": "The AC in the meeting room is blasting. Someone left it on max.",
+    "background": "/assets/Office.png",
+    "choices": [
+      { "id": "ac_lower", "label": "Turn it down", "emoji": "❄️", "co2": -3 },
+      { "id": "ac_off", "label": "Turn it off, open windows", "emoji": "🪟", "co2": -5 },
+      { "id": "ac_ignore", "label": "Leave it", "emoji": "🤷", "co2": 4 }
+    ]
+  },
+  {
+    "id": "coffee_run",
+    "title": "Coffee Run",
+    "prompt": "Afternoon slump! Time for coffee.",
+    "background": "/assets/Cafe.png",
+    "choices": [
+      { "id": "coffee_reusable", "label": "Reusable mug from café", "emoji": "☕", "co2": 1 },
+      { "id": "coffee_disposable", "label": "Disposable cup", "emoji": "🥤", "co2": 4 },
+      { "id": "coffee_skip", "label": "Just drink water", "emoji": "💧", "co2": 0 }
+    ]
+  },
+  {
+    "id": "printer_waste",
+    "title": "Paper Trail",
+    "prompt": "Someone printed 50 pages and abandoned them at the printer.",
+    "background": "/assets/Office.png",
+    "choices": [
+      { "id": "paper_recycle", "label": "Recycle them", "emoji": "♻️", "co2": -1 },
+      { "id": "paper_reuse", "label": "Use as scratch paper", "emoji": "📝", "co2": -2 },
+      { "id": "paper_ignore", "label": "Not your problem", "emoji": "🚶", "co2": 2 }
+    ]
+  },
+  {
+    "id": "delivery_package",
+    "title": "Package Arrived",
+    "prompt": "A package arrived! It's from a same-day delivery you ordered.",
+    "background": "/assets/Home.png",
+    "choices": [
+      { "id": "delivery_consolidate", "label": "Consolidate future orders", "emoji": "📦", "co2": -1 },
+      { "id": "delivery_enjoy", "label": "Nice! Order another thing", "emoji": "🛒", "co2": 6 }
+    ]
+  }
+]
