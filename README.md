@@ -29,11 +29,13 @@ graph TD
     WorldState[World State Calculator]:::engine
     NPCEngine[NPC Dialogue Engine]:::engine
     AssetLoader[Progressive Asset Loader]:::utility
-    AudioManager[Synth Audio Manager]:::utility
+    AudioManager[Synth SFX Manager]:::utility
+    BGMEngine[Procedural BGM Engine]:::utility
     TabVisibility[Tab Visibility Manager]:::utility
 
     %% UI Components
     App[page.tsx Root]:::view
+    Loading[LoadingScreen]:::view
     Onboarding[OnboardingWizard]:::view
     SceneView[SceneView]:::view
     ExploreView[WorldExplore Canvas]:::view
@@ -41,22 +43,25 @@ graph TD
 
     %% Interactions
     App -->|Mounts & Registers| TabVisibility
-    App -->|Triggers Priorities| AssetLoader
     App -->|Subscribes to Phase| Store
     
-    Onboarding -->|Saves Settings| Store
+    Loading -->|Triggers| BGMEngine
+    Loading -->|Triggers| AssetLoader
+    
+    Onboarding -->|Saves Profile & Avatar| Store
     SceneView -->|Submits Choice| Store
     ExploreView -->|Submits Next Day| Store
     
     Store -->|Fetches Coefficients| CarbonMath
     Store -->|Calculates Tiers / Mutations| WorldState
     Store -->|Selects Dialogues| NPCEngine
-    
     Store -->|Persists State| LocalStorage[(Local Storage)]
     
     ExploreView -->|Pauses Loop| TabVisibility
     ExploreView -->|Plays Sound Trigger| AudioManager
-    ExploreView -->|Draws WebP Map| AssetLoader
+    ExploreView -->|Draws Character Sprite| AssetLoader
+    
+    BGMEngine -->|Pauses on Hide| TabVisibility
 ```
 
 ---
@@ -65,10 +70,22 @@ graph TD
 
 ### 1. Game State & Phase Controller
 * **Source:** [gameStore.ts](file:///c:/Users/karan/promotwar/src/lib/gameStore.ts)
-* **Description:** Built on Zustand, the store operates a finite state machine managing game phases (`title` → `onboarding` → `scene` → `afternoon_event` → `summary` → `explore` → `weekly_report`).
+* **Description:** Built on Zustand, the store operates a finite state machine managing game phases (`title` → `loading` → `onboarding` → `scene` → `afternoon_event` → `summary` → `explore` → `weekly_report`).
 * **Design Pattern:** Persistent middleware caches state to browser local storage. A partialized state filter ensures non-serializable objects (like loaders and callback listeners) are kept out of storage.
 
-### 2. Carbon Math Calculation
+### 2. Immersive Intro Loading Sequence
+* **Source:** [LoadingScreen.tsx](file:///c:/Users/karan/promotwar/src/components/LoadingScreen.tsx)
+* **Description:** Simulates a 15-second loading bar sequence with introductory environmental lore. The sequence establishes the game's premise, transitions smoothly using requestAnimationFrame tick cycles, and triggers the ambient music synthesizer.
+
+### 3. Profile & Avatar Customization
+* **Source:** [OnboardingWizard.tsx](file:///c:/Users/karan/promotwar/src/components/OnboardingWizard.tsx)
+* **Description:** Collects player profiling data including a custom username and character selection (Female vs Male avatar). Renders characters using high-fidelity pixel sprites (`FemaleCharacter.png` and `Male_Character.png`) during setup and reflects the selected gender avatar in the final exploration canvas.
+
+### 4. Interactive Image-Based Choice Selection
+* **Source:** [SceneView.tsx](file:///c:/Users/karan/promotwar/src/components/SceneView.tsx)
+* **Description:** Extends standard text choices with option cards loaded from sprite sheets. By checking the `optionAsset` field, the engine renders choices inside grid layouts, cropping individual options from a combined sprite strip using CSS background positioning.
+
+### 5. Carbon Math Calculation
 * **Source:** [carbonMath.ts](file:///c:/Users/karan/promotwar/src/lib/carbonMath.ts)
 * **Description:** Resolves emission totals using regional Grid Emission Coefficients ($\text{CO}_2\text{e}$).
 * **Coefficients:** 
@@ -78,7 +95,7 @@ graph TD
   * `CN` (China): 1.2
 * **Target thresholds:** Daily Clean Threshold is set to $25 \text{ kg CO}_2\text{e}$ with a daily sustainability target of $8.2 \text{ kg}$ (correlating to the global $3 \text{ tonnes/year}$ target).
 
-### 3. Dynamic World Mutations & Tiers
+### 6. Dynamic World Mutations & Tiers
 * **Source:** [worldState.ts](file:///c:/Users/karan/promotwar/src/lib/worldState.ts)
 * **Description:** Translates cumulative scores into environmental tiers:
   * **Pristine** ($<80 \text{ kg}$): Vibrant sky, high tree count, clean water.
@@ -87,31 +104,34 @@ graph TD
   * **Polluted** ($\ge 400 \text{ kg}$): Smog overlay, dead vegetation, heavy smoke.
 * **Streak Mutations:** 3-day Clean Streaks trigger healing mutations (`spawnTree`, `clearWater`, `reduceSmoke`). 3-day Dirty Streaks spawn smog warnings or increase smoke.
 
-### 4. Contextual NPC Dialogues
+### 7. Contextual NPC Dialogues
 * **Source:** [npcEngine.ts](file:///c:/Users/karan/promotwar/src/lib/npcEngine.ts)
 * **Data Schema:** [npcDialogue.json](file:///c:/Users/karan/promotwar/src/data/npcDialogue.json)
 * **Description:** A reactive rule engine that queries the player's recent action logs. If a player relies on heavy fossil-fuel choices over 5 days, the NPC triggers targeted advice (e.g. suggesting opening curtains). It also celebrates sustainable streaks or provides warning alerts for degraded ecosystems.
 
-### 5. Progressive Asset Delivery
+### 8. Progressive Asset Delivery
 * **Source:** [assetLoader.ts](file:///c:/Users/karan/promotwar/src/lib/assetLoader.ts)
 * **Description:** Minimizes initial load times by prioritizing assets:
-  * **Startup Queue:** Critical splash/map files ($<2\text{MB}$) loaded immediately.
+  * **Startup Queue:** Critical splash/map files loaded immediately.
   * **Gameplay Queue:** Background environments streamed asynchronously as the player changes scenes.
   * **Background Queue:** Prefetches assets for upcoming scenes based on current game phase state.
 * **Fallbacks:** Automatically attempts to deliver optimized modern `.webp` textures, falling back to standard `.png` images if the browser fails to decode WebP.
 
-### 6. Oscillator-Based Audio Synthesis
-* **Source:** [audioManager.ts](file:///c:/Users/karan/promotwar/src/lib/audioManager.ts)
-* **Description:** Zero external audio file payloads. Generates 8-bit sound effects directly in the browser via the Web Audio API.
-* **Tones:**
+### 9. Oscillator-Based Audio Synthesis (SFX & BGM)
+* **Source:** [audioManager.ts](file:///c:/Users/karan/promotwar/src/lib/audioManager.ts) & [bgMusic.ts](file:///c:/Users/karan/promotwar/src/lib/bgMusic.ts)
+* **Description:** Eliminates large audio file downloads. Generates all sound effects and backing tracks dynamically inside the browser via the Web Audio API.
+* **Sound Effects (SFX):**
   * `click`: Square wave ($800\text{Hz}$, $0.05\text{s}$)
   * `choice_good`: Major chord ($C_5, E_5, G_5$) using smooth sine waves
   * `choice_bad`: Minor chord ($E\flat_4, G\flat_4, B\flat_4$) using sawtooth waves
   * `scene_transition` & `day_complete`: Dynamic arpeggios
   * `ambient`: Multi-frequency lower octave ambient pad
+* **Procedural Background Music (BGM):**
+  * Synthesizes slow, chill pentatonic melodies over a deep sub-bass warming pad and rotating arpeggiated chord sets.
+  * Integrates with visibility hooks to suspend/resume audio nodes smoothly when switching browser tabs.
 * **Browser Compliance:** Instantiates the `AudioContext` only after the first user gesture (click/keydown) to comply with modern browser autoplay policies.
 
-### 7. Resource-Aware Tab Visibility
+### 10. Resource-Aware Tab Visibility
 * **Source:** [tabVisibility.ts](file:///c:/Users/karan/promotwar/src/lib/tabVisibility.ts)
 * **Description:** Listens for browser `visibilitychange` events. When the tab loses focus, it pauses the HTML5 Canvas animation loop and suspends ambient sound generation, preventing background tab CPU/battery drain.
 
@@ -121,17 +141,34 @@ graph TD
 
 ```
 ├── public/                 # Static assets (WebP & PNG fallback sprites)
+│   ├── assets/             # Environmental backgrounds & character sprites
+│   │   ├── FemaleCharacter.png # Female explorer sprite
+│   │   ├── Male_Character.png  # Male explorer sprite
+│   │   └── options/        # Sprite sheets for choice options
+│   │       ├── Activity.png
+│   │       ├── Breakfast.png
+│   │       ├── Fuel.png
+│   │       ├── Hotcoldshower.png
+│   │       ├── Transport.png
+│   │       └── curtainlamp.png
+│   └── sw.js               # Offline-caching service worker
+│
+├── scripts/                # Development utilities
+│   ├── convertAssets.js    # Compresses background PNGs into WebPs
+│   └── generateIcons.js    # Generates PWA and browser favicons
+│
 ├── src/
 │   ├── app/                # Next.js Page & Global Styling
-│   │   ├── globals.css     # CSS Variables, Retro Font mappings, Scanline Effects
+│   │   ├── globals.css     # CSS Variables, Retro Font mappings, Scanline Effects, Image choice transitions
 │   │   ├── layout.tsx      # Main Layout, Next.js Google Fonts setup
 │   │   └── page.tsx        # App Root, Loader rendering, Phase router
 │   │
 │   ├── components/         # Game Views & UI Components
 │   │   ├── AfternoonEventView.tsx  # Randomized choice prompts
 │   │   ├── DaySummary.tsx  # Daily Carbon ledger & NPC feedback
-│   │   ├── OnboardingWizard.tsx    # User config: Grid/Diet/Location
-│   │   ├── SceneView.tsx   # Core narrative choice node renderer
+│   │   ├── LoadingScreen.tsx # 15-second lore intro loading screen
+│   │   ├── OnboardingWizard.tsx    # User config: Name, Avatar, Locale
+│   │   ├── SceneView.tsx   # Core narrative choice node renderer (Text/Image)
 │   │   ├── TitleScreen.tsx # Animated retro splash screen
 │   │   ├── WeeklyReport.tsx# Aggregate 7-day carbon ledger report
 │   │   └── WorldExplore.tsx# Canvas-based top-down world exploration
@@ -144,6 +181,7 @@ graph TD
 │   └── lib/                # Core Utility & Engine Libraries
 │       ├── assetLoader.ts  # Progressive Loader
 │       ├── audioManager.ts # Oscillator Audio Synthesizer
+│       ├── bgMusic.ts      # Oscillator Background Music Engine
 │       ├── carbonMath.ts   # Carbon Metric Engine
 │       ├── gameStore.ts    # Zustand State Machine
 │       ├── npcEngine.ts    # Dialogue Selector
@@ -187,7 +225,7 @@ npm run start
 
 ---
 
-## 📖 Extension Guide
+## 📖 Extension & Utility Guide
 
 ### How to Add a New Choice Scene
 1. Open [scenes.json](file:///c:/Users/karan/promotwar/src/data/scenes.json).
@@ -215,20 +253,26 @@ npm run start
 }
 ```
 
-### How to Add Custom Synthesis Sound Effects
-1. Open [audioManager.ts](file:///c:/Users/karan/promotwar/src/lib/audioManager.ts).
-2. Register a new ID in the `SoundId` union type.
-3. Implement a custom oscillator node chain in `play()`. For example, a retro laser sound:
-```typescript
-case 'laser':
-  // Slide frequency down from 1200Hz to 100Hz
-  const osc = this.context.createOscillator();
-  const gain = this.context.createGain();
-  osc.frequency.setValueAtTime(1200, this.context.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(100, this.context.currentTime + 0.15);
-  // Connect and play...
-  break;
+### How to Add Image Option Assets to a Step
+1. Place a sprite sheet containing all option frames side-by-side in `public/assets/options/`.
+2. Add an `optionAsset` node to the scene step configuration in `scenes.json` pointing to the sprite sheet path and specifying the total frames:
+```json
+"optionAsset": {
+  "src": "/assets/options/myoptions.png",
+  "count": 2
+}
 ```
+3. The choice renderer automatically slices the sprite sheet into even grid columns depending on the choice index.
+
+### Running Developer Tools
+* **Asset Optimization (WebP Conversion)**:
+  ```bash
+  node scripts/convertAssets.js
+  ```
+* **Icon Generator (PWA / Favicon)**:
+  ```bash
+  node scripts/generateIcons.js
+  ```
 
 ---
 
@@ -239,7 +283,7 @@ EcoPixel conforms directly to high-efficiency web game principles outlined in th
 | Rule Category | Applied Implementation |
 | :--- | :--- |
 | **Progressive Asset Loading** | Core startup payload is restricted to $<2\text{MB}$. Additional assets are loaded on demand and prefetched in the background based on game phase. |
-| **Tab Throttling** | The Canvas game loop pauses and `AudioContext` yields execution when the document's `visibilityState` changes to `hidden`. |
+| **Tab Throttling** | The Canvas game loop pauses, and both SFX `AudioContext` and BGM synthesis yield execution when the document's `visibilityState` changes to `hidden`. |
 | **Autoplay Audio Policy** | Synthesizer initializers do not block startup; they wait for the first user interaction to invoke `AudioContext.resume()`. |
 | **Asset Compression** | Graphics are compiled into optimized WebP formats with robust PNG file fallbacks. |
 | **GC Optimization** | Uses lightweight JSON files for static data storage and utilizes static object pools for vector positioning in [WorldExplore.tsx](file:///c:/Users/karan/promotwar/src/components/WorldExplore.tsx). |
