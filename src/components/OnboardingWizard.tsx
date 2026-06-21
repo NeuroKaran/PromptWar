@@ -1,70 +1,33 @@
 'use client';
 
-import { useState } from 'react';
-import { useGameStore, type OnboardingChoices } from '@/lib/gameStore';
+import { useState, useRef, useEffect } from 'react';
+import { useGameStore } from '@/lib/gameStore';
 import { getAudioManager } from '@/lib/audioManager';
-
-const STEPS = [
-  {
-    title: 'Transportation',
-    prompt: 'How do you usually commute?',
-    field: 'transport' as const,
-    options: [
-      { id: 'walk_cycle', label: 'Walk / Cycle', emoji: '🚲', desc: 'Zero emissions' },
-      { id: 'public_transit', label: 'Public Transit', emoji: '🚌', desc: 'Low emissions' },
-      { id: 'car_ev', label: 'Electric Car', emoji: '⚡', desc: 'Moderate emissions' },
-      { id: 'car_petrol', label: 'Petrol Car', emoji: '⛽', desc: 'High emissions' },
-    ],
-  },
-  {
-    title: 'Diet',
-    prompt: 'What best describes your diet?',
-    field: 'diet' as const,
-    options: [
-      { id: 'vegan', label: 'Plant-based', emoji: '🌱', desc: 'Lowest footprint' },
-      { id: 'vegetarian', label: 'Vegetarian', emoji: '🥗', desc: 'Low footprint' },
-      { id: 'mixed', label: 'Mixed diet', emoji: '🍽️', desc: 'Moderate footprint' },
-      { id: 'meat_heavy', label: 'Meat-heavy', emoji: '🥩', desc: 'Highest footprint' },
-    ],
-  },
-  {
-    title: 'Energy Source',
-    prompt: 'What powers your home?',
-    field: 'energy' as const,
-    options: [
-      { id: 'solar', label: 'Solar / Renewable', emoji: '☀️', desc: 'Clean energy' },
-      { id: 'mixed_grid', label: 'Mixed grid', emoji: '🔌', desc: 'Partially clean' },
-      { id: 'fossil_grid', label: 'Fossil-fuel grid', emoji: '🏭', desc: 'Carbon heavy' },
-    ],
-  },
-];
 
 export default function OnboardingWizard() {
   const completeOnboarding = useGameStore((s) => s.completeOnboarding);
-  const [stepIndex, setStepIndex] = useState(0);
-  const [choices, setChoices] = useState<Partial<OnboardingChoices>>({});
+  const [name, setName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const currentStep = STEPS[stepIndex];
-  const isLastStep = stepIndex === STEPS.length - 1;
-  const selectedValue = choices[currentStep.field];
+  useEffect(() => {
+    // Auto-focus the input after mount animation
+    const timer = setTimeout(() => inputRef.current?.focus(), 600);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const handleSelect = (optionId: string) => {
+  const trimmedName = name.trim();
+  const canSubmit = trimmedName.length >= 1 && !isSubmitting;
+
+  const handleSubmit = () => {
+    if (!canSubmit) return;
     getAudioManager().play('click');
-    setChoices((prev) => ({ ...prev, [currentStep.field]: optionId }));
+    setIsSubmitting(true);
+    completeOnboarding(trimmedName);
   };
 
-  const handleNext = () => {
-    if (!selectedValue) return;
-    getAudioManager().play('click');
-    if (isLastStep) {
-      completeOnboarding(choices as OnboardingChoices);
-    } else {
-      setStepIndex((prev) => prev + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (stepIndex > 0) setStepIndex((prev) => prev - 1);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSubmit();
   };
 
   return (
@@ -80,106 +43,91 @@ export default function OnboardingWizard() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70" />
 
       {/* Card */}
-      <div className="relative z-10 w-full max-w-lg mx-4 animate-fade-in">
-        {/* Progress bar */}
-        <div className="flex gap-2 mb-6 px-2">
-          {STEPS.map((_, i) => (
-            <div
-              key={i}
-              className="h-1.5 flex-1 transition-all duration-500"
-              style={{
-                background: i <= stepIndex ? '#4ade80' : '#2d4a35',
-                boxShadow: i <= stepIndex ? '0 0 8px rgba(34, 197, 94, 0.4)' : 'none',
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="dialogue-box">
-          {/* Step counter */}
+      <div className="relative z-10 w-full max-w-md mx-4 animate-fade-in">
+        <div className="dialogue-box" style={{ textAlign: 'center' }}>
+          {/* Icon */}
           <div
-            className="text-xs mb-4"
-            style={{ fontFamily: "'Press Start 2P', monospace", color: '#6b8f72' }}
+            className="text-4xl mb-4"
+            style={{ filter: 'drop-shadow(0 0 12px rgba(34, 197, 94, 0.4))' }}
           >
-            Step {stepIndex + 1} of {STEPS.length}
+            🌍
           </div>
 
-          {/* Title */}
+          {/* Heading */}
           <h2
-            className="text-sm mb-2"
+            className="text-sm mb-3"
             style={{
               fontFamily: "'Press Start 2P', monospace",
               color: '#4ade80',
               textShadow: '0 0 10px rgba(34, 197, 94, 0.3)',
             }}
           >
-            {currentStep.title}
+            Welcome, Traveler
           </h2>
 
           {/* Prompt */}
           <p
-            className="text-2xl mb-6"
+            className="text-2xl mb-8"
             style={{ fontFamily: "'VT323', monospace", color: '#a3c4ab' }}
           >
-            {currentStep.prompt}
+            What should we call you?
           </p>
 
-          {/* Options */}
-          <div className="flex flex-col gap-3 mb-6">
-            {currentStep.options.map((opt, i) => (
-              <button
-                key={opt.id}
-                id={`onboarding-${currentStep.field}-${opt.id}`}
-                onClick={() => handleSelect(opt.id)}
-                className={`onboarding-option animate-fade-in choice-delay-${i} ${
-                  selectedValue === opt.id ? 'selected' : ''
-                }`}
-              >
-                <span className="text-2xl">{opt.emoji}</span>
-                <div className="flex-1">
-                  <div style={{ color: '#e8f5e9' }}>{opt.label}</div>
-                  <div className="text-sm" style={{ color: '#6b8f72' }}>
-                    {opt.desc}
-                  </div>
-                </div>
-                {selectedValue === opt.id && (
-                  <span className="text-lg" style={{ color: '#4ade80' }}>
-                    ✓
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex justify-between items-center">
-            {stepIndex > 0 ? (
-              <button
-                onClick={handleBack}
-                className="pixel-btn"
-                style={{ fontSize: '0.55rem', padding: '8px 16px' }}
-              >
-                ◀ Back
-              </button>
-            ) : (
-              <div />
-            )}
-
-            <button
-              id={`onboarding-next-${stepIndex}`}
-              onClick={handleNext}
-              disabled={!selectedValue}
-              className="pixel-btn"
+          {/* Name Input */}
+          <div className="mb-8">
+            <input
+              ref={inputRef}
+              id="onboarding-name-input"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Enter your name..."
+              maxLength={20}
+              autoComplete="off"
+              className="w-full px-4 py-3 text-center text-xl outline-none"
               style={{
-                fontSize: '0.55rem',
-                padding: '8px 16px',
-                opacity: selectedValue ? 1 : 0.4,
-                cursor: selectedValue ? 'pointer' : 'not-allowed',
+                fontFamily: "'VT323', monospace",
+                color: '#e8f5e9',
+                background: 'rgba(13, 38, 20, 0.7)',
+                border: '2px solid #2d4a35',
+                borderRadius: '4px',
+                caretColor: '#4ade80',
+                transition: 'border-color 0.3s, box-shadow 0.3s',
+                boxShadow: name.trim()
+                  ? '0 0 12px rgba(34, 197, 94, 0.15)'
+                  : 'none',
+                borderColor: name.trim() ? '#4ade80' : '#2d4a35',
+              }}
+            />
+            <div
+              className="mt-2 text-sm"
+              style={{
+                fontFamily: "'VT323', monospace",
+                color: '#6b8f72',
+                opacity: name.trim() ? 0 : 1,
+                transition: 'opacity 0.3s',
               }}
             >
-              {isLastStep ? '▶ Begin Day 1' : 'Next ▶'}
-            </button>
+              1–20 characters
+            </div>
           </div>
+
+          {/* Submit Button */}
+          <button
+            id="onboarding-start-btn"
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            className="pixel-btn"
+            style={{
+              fontSize: '0.55rem',
+              padding: '12px 28px',
+              opacity: canSubmit ? 1 : 0.4,
+              cursor: canSubmit ? 'pointer' : 'not-allowed',
+            }}
+          >
+            ▶ Begin Day 1
+          </button>
         </div>
       </div>
     </div>

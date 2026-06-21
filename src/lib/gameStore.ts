@@ -64,11 +64,7 @@ export interface DailySummaryEntry {
   mutationsApplied: MutationFlag[];
 }
 
-export interface OnboardingChoices {
-  transport: string;
-  diet: string;
-  energy: string;
-}
+
 
 // ─── Scene Order ─────────────────────────────────────────────────────
 
@@ -85,7 +81,7 @@ interface GameState {
   // Player profile
   username: string;
   locale: Locale;
-  onboardingChoices: OnboardingChoices | null;
+
   
   // Scene state machine
   currentSceneIndex: number; // Index in SCENE_ORDER
@@ -119,7 +115,7 @@ interface GameState {
 
   // ─── Actions ─────────────────────────────────────────────────────
   startGame: () => void;
-  completeOnboarding: (choices: OnboardingChoices) => void;
+  completeOnboarding: (playerName: string) => void;
   submitChoice: (choiceId: string) => void;
   submitAfternoonChoice: (choiceId: string) => void;
   goToExplore: () => void;
@@ -146,7 +142,7 @@ export const useGameStore = create<GameState>()(
       gamePhase: 'title',
       username: '',
       locale: 'IN',
-      onboardingChoices: null,
+
       currentSceneIndex: 0,
       currentStepId: null,
       currentAfternoonEvent: null,
@@ -170,14 +166,14 @@ export const useGameStore = create<GameState>()(
         set({ gamePhase: 'onboarding' });
       },
 
-      completeOnboarding: (choices: OnboardingChoices) => {
+      completeOnboarding: (playerName: string) => {
         const firstScene = SCENE_ORDER[0];
         const sceneConfig = scenes[firstScene];
         const firstStepId = sceneConfig?.steps[0]?.id ?? null;
         
         set({
           gamePhase: 'scene',
-          onboardingChoices: choices,
+          username: playerName,
           currentSceneIndex: 0,
           currentStepId: firstStepId,
           dayScore: 0,
@@ -382,7 +378,7 @@ export const useGameStore = create<GameState>()(
           gamePhase: 'title',
           username: '',
           locale: 'IN',
-          onboardingChoices: null,
+
           currentSceneIndex: 0,
           currentStepId: null,
           currentAfternoonEvent: null,
@@ -434,7 +430,7 @@ export const useGameStore = create<GameState>()(
         gamePhase: state.gamePhase,
         username: state.username,
         locale: state.locale,
-        onboardingChoices: state.onboardingChoices,
+
         currentSceneIndex: state.currentSceneIndex,
         currentStepId: state.currentStepId,
         currentAfternoonEvent: state.currentAfternoonEvent,
