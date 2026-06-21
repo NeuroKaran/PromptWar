@@ -7,6 +7,10 @@
       {
         "id": "light_source",
         "prompt": "The sun peeks through your curtains. How do you light your room?",
+        "optionAsset": {
+          "src": "/assets/options/curtainlamp.png",
+          "count": 2
+        },
         "choices": [
           { "id": "light_natural", "label": "Open the curtains", "emoji": "☀️", "co2": 0, "next": "shower" },
           { "id": "light_artificial", "label": "Turn on the lamp", "emoji": "💡", "co2": null, "next": "light_grid_type" }
@@ -23,6 +27,10 @@
       {
         "id": "shower",
         "prompt": "Time to freshen up. What kind of shower?",
+        "optionAsset": {
+          "src": "/assets/options/Hotcoldshower.png",
+          "count": 2
+        },
         "choices": [
           { "id": "shower_cold_short", "label": "Cold, 2 minutes", "emoji": "🧊", "co2": 1, "next": "breakfast" },
           { "id": "shower_hot_long", "label": "Hot, 10 minutes", "emoji": "🔥", "co2": 6, "next": "breakfast" }
@@ -31,6 +39,10 @@
       {
         "id": "breakfast",
         "prompt": "Your stomach rumbles. What's for breakfast?",
+        "optionAsset": {
+          "src": "/assets/options/Breakfast.png",
+          "count": 4
+        },
         "choices": [
           { "id": "bf_oats", "label": "Local oats", "emoji": "🥣", "co2": 1, "next": "END" },
           { "id": "bf_eggs", "label": "Eggs & toast", "emoji": "🍳", "co2": 4, "next": "END" },
@@ -48,6 +60,10 @@
       {
         "id": "mode",
         "prompt": "Time to head to work. How do you get there?",
+        "optionAsset": {
+          "src": "/assets/options/Transport.png",
+          "count": 4
+        },
         "choices": [
           { "id": "commute_bike", "label": "Walk / Cycle", "emoji": "🚲", "co2": 0, "next": "END" },
           { "id": "commute_transit", "label": "Public transit", "emoji": "🚌", "co2": null, "next": "transit_type" },
@@ -66,6 +82,10 @@
       {
         "id": "car_type",
         "prompt": "What car, and riding solo?",
+        "optionAsset": {
+          "src": "/assets/options/Fuel.png",
+          "count": 4
+        },
         "choices": [
           { "id": "car_ev_solo", "label": "EV, solo", "emoji": "🔋", "co2": 4, "next": "END" },
           { "id": "car_ev_pool", "label": "EV, carpool", "emoji": "🔋👥", "co2": 2, "next": "END" },
@@ -109,6 +129,10 @@
       {
         "id": "activity",
         "prompt": "You're home for the evening. How do you unwind?",
+        "optionAsset": {
+          "src": "/assets/options/Activity.png",
+          "count": 3
+        },
         "choices": [
           { "id": "evening_stream", "label": "Stream / TV", "emoji": "📺", "co2": 4, "next": "charging" },
           { "id": "evening_read", "label": "Read a book", "emoji": "📖", "co2": 1, "next": "charging" },

@@ -25,7 +25,9 @@ export default function Home() {
 
   // Initialize systems on mount
   useEffect(() => {
-    setMounted(true);
+    setTimeout(() => {
+      setMounted(true);
+    }, 0);
 
     // Register service worker for PWA offline support
     if ('serviceWorker' in navigator) {

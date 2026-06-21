@@ -18,13 +18,18 @@ export default function AfternoonEventView() {
   const [showCard, setShowCard] = useState(false);
   const [showChoices, setShowChoices] = useState(false);
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
+  const [prevEventId, setPrevEventId] = useState<string | null>(null);
+
+  if (event && event.id !== prevEventId) {
+    setPrevEventId(event.id);
+    setShowCard(false);
+    setShowChoices(false);
+    setSelectedChoice(null);
+  }
 
   const tierVisuals = getWorldTierVisuals(worldState);
 
   useEffect(() => {
-    setShowCard(false);
-    setShowChoices(false);
-    setSelectedChoice(null);
     // Play scene transition sound for random event
     getAudioManager().play('scene_transition');
     const t1 = setTimeout(() => setShowCard(true), 300);

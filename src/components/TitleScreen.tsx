@@ -20,7 +20,9 @@ export default function TitleScreen() {
       speed: Math.random() * 20 + 10,
       delay: Math.random() * 5,
     }));
-    setParticles(newParticles);
+    setTimeout(() => {
+      setParticles(newParticles);
+    }, 0);
 
     // Staggered reveal
     const t1 = setTimeout(() => setShowTitle(true), 300);

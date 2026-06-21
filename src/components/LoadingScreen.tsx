@@ -5,23 +5,12 @@ import { useGameStore } from '@/lib/gameStore';
 import { getAudioManager } from '@/lib/audioManager';
 import { getBgMusic } from '@/lib/bgMusic';
 
-// ─── Intro lore lines shown during loading ──────────────────────────
 const LORE_LINES = [
-  { text: 'The year is 2045...', icon: '🌍' },
-  { text: 'Earth\'s climate hangs in the balance.', icon: '🌡️' },
-  { text: 'Glaciers are retreating. Seas are rising.', icon: '🏔️' },
-  { text: 'But hope isn\'t lost — not yet.', icon: '✨' },
+  { text: 'The year is 2045... Earth\'s climate hangs in the balance.', icon: '🌍' },
   { text: 'Every choice you make leaves a carbon footprint.', icon: '👣' },
-  { text: 'Your morning coffee. Your commute. Your dinner.', icon: '☕' },
-  { text: 'Small decisions. Massive consequences.', icon: '⚡' },
-  { text: 'The world around you will change with your actions.', icon: '🔄' },
-  { text: 'Forests will grow — or wither.', icon: '🌲' },
-  { text: 'Skies will clear — or darken.', icon: '🌤️' },
-  { text: 'Animals will thrive — or disappear.', icon: '🦋' },
-  { text: 'You are not alone. NPCs are watching.', icon: '🧑‍🤝‍🧑' },
-  { text: 'Can you live one day without breaking the planet?', icon: '🌱' },
-  { text: 'Let\'s find out...', icon: '🎮' },
-  { text: 'Your world is loading...', icon: '👁️' },
+  { text: 'The world around you will react to your decisions.', icon: '🌲' },
+  { text: 'Can you survive a day without breaking the planet?', icon: '🌱' },
+  { text: 'Your world is loading...', icon: '🎮' },
 ];
 
 const TOTAL_DURATION_MS = 15000; // 15 seconds total
@@ -192,17 +181,20 @@ export default function LoadingScreen() {
 
   // Smooth progress bar using requestAnimationFrame
   const animateProgress = useCallback(() => {
-    const elapsed = performance.now() - startTime.current;
-    const pct = Math.min(elapsed / TOTAL_DURATION_MS, 1);
-    // Ease-in-out curve for satisfying feel
-    const eased = pct < 0.5
-      ? 2 * pct * pct
-      : 1 - Math.pow(-2 * pct + 2, 2) / 2;
-    setProgress(eased);
+    function tick() {
+      const elapsed = performance.now() - startTime.current;
+      const pct = Math.min(elapsed / TOTAL_DURATION_MS, 1);
+      // Ease-in-out curve for satisfying feel
+      const eased = pct < 0.5
+        ? 2 * pct * pct
+        : 1 - Math.pow(-2 * pct + 2, 2) / 2;
+      setProgress(eased);
 
-    if (pct < 1) {
-      animFrame.current = requestAnimationFrame(animateProgress);
+      if (pct < 1) {
+        animFrame.current = requestAnimationFrame(tick);
+      }
     }
+    tick();
   }, []);
 
   useEffect(() => {

@@ -57,162 +57,165 @@ export default function WorldExplore() {
   }, [gender]);
 
   const draw = useCallback(() => {
-    // Tab visibility check - skip rendering when tab is hidden
-    if (isPausedRef.current) {
-      animRef.current = requestAnimationFrame(draw);
-      return;
-    }
+    function tick() {
+      // Tab visibility check - skip rendering when tab is hidden
+      if (isPausedRef.current) {
+        animRef.current = requestAnimationFrame(tick);
+        return;
+      }
 
-    const canvas = canvasRef.current;
-    const img = imgRef.current;
-    if (!canvas || !img) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+      const canvas = canvasRef.current;
+      const img = imgRef.current;
+      if (!canvas || !img) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    const cw = canvas.width;
-    const ch = canvas.height;
+      const cw = canvas.width;
+      const ch = canvas.height;
 
-    // Movement
-    const speed = 0.004;
-    const keys = keysRef.current;
-    if (keys.has('arrowup') || keys.has('w')) posRef.current.y = Math.max(0.05, posRef.current.y - speed);
-    if (keys.has('arrowdown') || keys.has('s')) posRef.current.y = Math.min(0.95, posRef.current.y + speed);
-    if (keys.has('arrowleft') || keys.has('a')) posRef.current.x = Math.max(0.05, posRef.current.x - speed);
-    if (keys.has('arrowright') || keys.has('d')) posRef.current.x = Math.min(0.95, posRef.current.x + speed);
+      // Movement
+      const speed = 0.004;
+      const keys = keysRef.current;
+      if (keys.has('arrowup') || keys.has('w')) posRef.current.y = Math.max(0.05, posRef.current.y - speed);
+      if (keys.has('arrowdown') || keys.has('s')) posRef.current.y = Math.min(0.95, posRef.current.y + speed);
+      if (keys.has('arrowleft') || keys.has('a')) posRef.current.x = Math.max(0.05, posRef.current.x - speed);
+      if (keys.has('arrowright') || keys.has('d')) posRef.current.x = Math.min(0.95, posRef.current.x + speed);
 
-    // Clear
-    ctx.clearRect(0, 0, cw, ch);
+      // Clear
+      ctx.clearRect(0, 0, cw, ch);
 
-    // Draw map
-    ctx.drawImage(img, 0, 0, cw, ch);
+      // Draw map
+      ctx.drawImage(img, 0, 0, cw, ch);
 
-    // World state overlay
-    if (worldState !== 'pristine') {
-      ctx.fillStyle = worldState === 'polluted'
-        ? 'rgba(80, 80, 80, 0.45)'
-        : worldState === 'degraded'
-          ? 'rgba(120, 120, 80, 0.25)'
-          : 'rgba(180, 200, 220, 0.12)';
-      ctx.fillRect(0, 0, cw, ch);
-    }
+      // World state overlay
+      if (worldState !== 'pristine') {
+        ctx.fillStyle = worldState === 'polluted'
+          ? 'rgba(80, 80, 80, 0.45)'
+          : worldState === 'degraded'
+            ? 'rgba(120, 120, 80, 0.25)'
+            : 'rgba(180, 200, 220, 0.12)';
+        ctx.fillRect(0, 0, cw, ch);
+      }
 
-    // Draw zone labels
-    let inZone: string | null = null;
-    for (const zone of ZONES) {
-      const zx = zone.x * cw;
-      const zy = zone.y * ch;
-      const zw = zone.w * cw;
-      const zh = zone.h * ch;
+      // Draw zone labels
+      let inZone: string | null = null;
+      for (const zone of ZONES) {
+        const zx = zone.x * cw;
+        const zy = zone.y * ch;
+        const zw = zone.w * cw;
+        const zh = zone.h * ch;
 
+        const px = posRef.current.x * cw;
+        const py = posRef.current.y * ch;
+        if (px >= zx && px <= zx + zw && py >= zy && py <= zy + zh) {
+          inZone = zone.label;
+          ctx.strokeStyle = '#4ade80';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.strokeRect(zx, zy, zw, zh);
+          ctx.setLineDash([]);
+        }
+      }
+      setCurrentZone(inZone);
+
+      // Draw trees based on world state
+      if (worldState === 'pristine' || worldState === 'fair') {
+        const treeSym = '🌳';
+        ctx.font = `${Math.floor(cw * 0.03)}px serif`;
+        const treePositions = [
+          [0.05, 0.15], [0.92, 0.08], [0.03, 0.85], [0.93, 0.88],
+          [0.48, 0.05], [0.48, 0.95],
+        ];
+        treePositions.forEach(([tx, ty]) => {
+          ctx.globalAlpha = worldState === 'pristine' ? 0.9 : 0.5;
+          ctx.fillText(treeSym, tx * cw, ty * ch);
+        });
+        ctx.globalAlpha = 1;
+      }
+
+      // Draw smoke particles for degraded/polluted
+      if (worldState === 'degraded' || worldState === 'polluted') {
+        const smokeCount = worldState === 'polluted' ? 8 : 4;
+        ctx.globalAlpha = worldState === 'polluted' ? 0.4 : 0.2;
+        ctx.fillStyle = '#888';
+        for (let i = 0; i < smokeCount; i++) {
+          const sx = ((frameRef.current * 0.3 + i * 200) % cw);
+          const sy = Math.sin(frameRef.current * 0.01 + i) * 20 + ch * 0.2;
+          const sr = 8 + Math.sin(frameRef.current * 0.02 + i * 3) * 4;
+          ctx.beginPath();
+          ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // Draw player avatar
       const px = posRef.current.x * cw;
       const py = posRef.current.y * ch;
-      if (px >= zx && px <= zx + zw && py >= zy && py <= zy + zh) {
-        inZone = zone.label;
-        ctx.strokeStyle = '#4ade80';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([4, 4]);
-        ctx.strokeRect(zx, zy, zw, zh);
-        ctx.setLineDash([]);
+      frameRef.current += 1;
+
+      // Walking animation - bob
+      let bob = 0;
+      if (keys.size > 0) {
+        bob = Math.sin(frameRef.current * 0.25) * 3;
       }
-    }
-    setCurrentZone(inZone);
 
-    // Draw trees based on world state
-    if (worldState === 'pristine' || worldState === 'fair') {
-      const treeSym = '🌳';
-      ctx.font = `${Math.floor(cw * 0.03)}px serif`;
-      const treePositions = [
-        [0.05, 0.15], [0.92, 0.08], [0.03, 0.85], [0.93, 0.88],
-        [0.48, 0.05], [0.48, 0.95],
-      ];
-      treePositions.forEach(([tx, ty]) => {
-        ctx.globalAlpha = worldState === 'pristine' ? 0.9 : 0.5;
-        ctx.fillText(treeSym, tx * cw, ty * ch);
-      });
-      ctx.globalAlpha = 1;
-    }
-
-    // Draw smoke particles for degraded/polluted
-    if (worldState === 'degraded' || worldState === 'polluted') {
-      const smokeCount = worldState === 'polluted' ? 8 : 4;
-      ctx.globalAlpha = worldState === 'polluted' ? 0.4 : 0.2;
-      ctx.fillStyle = '#888';
-      for (let i = 0; i < smokeCount; i++) {
-        const sx = ((frameRef.current * 0.3 + i * 200) % cw);
-        const sy = Math.sin(frameRef.current * 0.01 + i) * 20 + ch * 0.2;
-        const sr = 8 + Math.sin(frameRef.current * 0.02 + i * 3) * 4;
+      if (playerImgRef.current && playerImgRef.current.complete) {
+        const img = playerImgRef.current;
+        const aspectRatio = img.naturalWidth / img.naturalHeight;
+        const avatarHeight = Math.floor(cw * 0.055);
+        const avatarWidth = avatarHeight * aspectRatio;
+        
+        // Shadow centered at feet (feet are at py + 8)
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.beginPath();
-        ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+        ctx.ellipse(px, py + 8, avatarWidth * 0.45, avatarWidth * 0.2, 0, 0, Math.PI * 2);
         ctx.fill();
+        
+        ctx.drawImage(
+          img,
+          px - avatarWidth / 2,
+          py - avatarHeight + 8 + bob,
+          avatarWidth,
+          avatarHeight
+        );
+      } else {
+        const avatarSize = Math.floor(cw * 0.025);
+        // Fallback: Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(px, py + avatarSize + 2, avatarSize * 0.8, avatarSize * 0.3, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Fallback: Body
+        ctx.fillStyle = '#4ade80';
+        ctx.fillRect(px - avatarSize / 2, py - avatarSize / 2 + bob, avatarSize, avatarSize);
+
+        // Fallback: Head
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(px - avatarSize * 0.4, py - avatarSize * 1.1 + bob, avatarSize * 0.8, avatarSize * 0.7);
       }
-      ctx.globalAlpha = 1;
-    }
 
-    // Draw player avatar
-    const px = posRef.current.x * cw;
-    const py = posRef.current.y * ch;
-    frameRef.current += 1;
-
-    // Walking animation - bob
-    let bob = 0;
-    if (keys.size > 0) {
-      bob = Math.sin(frameRef.current * 0.25) * 3;
-    }
-
-    if (playerImgRef.current && playerImgRef.current.complete) {
-      const img = playerImgRef.current;
-      const aspectRatio = img.naturalWidth / img.naturalHeight;
-      const avatarHeight = Math.floor(cw * 0.055);
-      const avatarWidth = avatarHeight * aspectRatio;
-      
-      // Shadow centered at feet (feet are at py + 8)
-      ctx.fillStyle = 'rgba(0,0,0,0.3)';
-      ctx.beginPath();
-      ctx.ellipse(px, py + 8, avatarWidth * 0.45, avatarWidth * 0.2, 0, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.drawImage(
-        img,
-        px - avatarWidth / 2,
-        py - avatarHeight + 8 + bob,
-        avatarWidth,
-        avatarHeight
-      );
-    } else {
-      const avatarSize = Math.floor(cw * 0.025);
-      // Fallback: Shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.3)';
-      ctx.beginPath();
-      ctx.ellipse(px, py + avatarSize + 2, avatarSize * 0.8, avatarSize * 0.3, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Fallback: Body
+      // Draw minimap
+      const mmSize = Math.floor(cw * 0.15);
+      const mmX = cw - mmSize - 8;
+      const mmY = 8;
+      ctx.fillStyle = 'rgba(10, 26, 15, 0.8)';
+      ctx.fillRect(mmX - 2, mmY - 2, mmSize + 4, mmSize + 4);
+      ctx.drawImage(img, mmX, mmY, mmSize, mmSize);
       ctx.fillStyle = '#4ade80';
-      ctx.fillRect(px - avatarSize / 2, py - avatarSize / 2 + bob, avatarSize, avatarSize);
+      ctx.fillRect(
+        mmX + posRef.current.x * mmSize - 2,
+        mmY + posRef.current.y * mmSize - 2,
+        4, 4
+      );
+      ctx.strokeStyle = '#4ade80';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(mmX, mmY, mmSize, mmSize);
 
-      // Fallback: Head
-      ctx.fillStyle = '#fbbf24';
-      ctx.fillRect(px - avatarSize * 0.4, py - avatarSize * 1.1 + bob, avatarSize * 0.8, avatarSize * 0.7);
+      animRef.current = requestAnimationFrame(tick);
     }
-
-    // Draw minimap
-    const mmSize = Math.floor(cw * 0.15);
-    const mmX = cw - mmSize - 8;
-    const mmY = 8;
-    ctx.fillStyle = 'rgba(10, 26, 15, 0.8)';
-    ctx.fillRect(mmX - 2, mmY - 2, mmSize + 4, mmSize + 4);
-    ctx.drawImage(img, mmX, mmY, mmSize, mmSize);
-    ctx.fillStyle = '#4ade80';
-    ctx.fillRect(
-      mmX + posRef.current.x * mmSize - 2,
-      mmY + posRef.current.y * mmSize - 2,
-      4, 4
-    );
-    ctx.strokeStyle = '#4ade80';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(mmX, mmY, mmSize, mmSize);
-
-    animRef.current = requestAnimationFrame(draw);
+    tick();
   }, [worldState]);
 
   useEffect(() => {

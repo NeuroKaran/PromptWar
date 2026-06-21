@@ -33,6 +33,10 @@ export interface SceneStep {
   id: string;
   prompt: string;
   choices: SceneChoice[];
+  optionAsset?: {
+    src: string;
+    count: number;
+  };
 }
 
 export interface SceneConfig {
