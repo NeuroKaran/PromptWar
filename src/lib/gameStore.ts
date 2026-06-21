@@ -81,6 +81,7 @@ interface GameState {
   
   // Player profile
   username: string;
+  gender: 'male' | 'female' | '';
   locale: Locale;
 
   
@@ -116,7 +117,7 @@ interface GameState {
 
   // ─── Actions ─────────────────────────────────────────────────────
   startGame: () => void;
-  completeOnboarding: (playerName: string) => void;
+  completeOnboarding: (playerName: string, gender: 'male' | 'female') => void;
   submitChoice: (choiceId: string) => void;
   submitAfternoonChoice: (choiceId: string) => void;
   goToExplore: () => void;
@@ -143,6 +144,7 @@ export const useGameStore = create<GameState>()(
       // ─── Initial State ──────────────────────────────────────────
       gamePhase: 'title',
       username: '',
+      gender: '',
       locale: 'IN',
 
       currentSceneIndex: 0,
@@ -168,7 +170,7 @@ export const useGameStore = create<GameState>()(
         set({ gamePhase: 'loading' });
       },
 
-      completeOnboarding: (playerName: string) => {
+      completeOnboarding: (playerName: string, gender: 'male' | 'female') => {
         const firstScene = SCENE_ORDER[0];
         const sceneConfig = scenes[firstScene];
         const firstStepId = sceneConfig?.steps[0]?.id ?? null;
@@ -176,6 +178,7 @@ export const useGameStore = create<GameState>()(
         set({
           gamePhase: 'scene',
           username: playerName,
+          gender: gender,
           currentSceneIndex: 0,
           currentStepId: firstStepId,
           dayScore: 0,
@@ -379,6 +382,7 @@ export const useGameStore = create<GameState>()(
         set({
           gamePhase: 'title',
           username: '',
+          gender: '',
           locale: 'IN',
 
           currentSceneIndex: 0,
@@ -435,6 +439,7 @@ export const useGameStore = create<GameState>()(
       partialize: (state) => ({
         gamePhase: state.gamePhase,
         username: state.username,
+        gender: state.gender,
         locale: state.locale,
 
         currentSceneIndex: state.currentSceneIndex,

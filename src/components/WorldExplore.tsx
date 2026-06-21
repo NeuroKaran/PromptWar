@@ -22,9 +22,12 @@ export default function WorldExplore() {
   const cleanStreak = useGameStore((s) => s.cleanStreak);
   const lastDayMutations = useGameStore((s) => s.lastDayMutations);
 
+  const gender = useGameStore((s) => s.gender);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const playerImgRef = useRef<HTMLImageElement | null>(null);
   const posRef = useRef({ x: 0.3, y: 0.5 });
   const keysRef = useRef<Set<string>>(new Set());
   const animRef = useRef<number>(0);
@@ -43,6 +46,15 @@ export default function WorldExplore() {
     audio.play('ambient');
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    if (!gender) return;
+    const pImg = new Image();
+    pImg.src = gender === 'male' ? '/assets/Male_Character.png' : '/assets/FemaleCharacter.png';
+    pImg.onload = () => {
+      playerImgRef.current = pImg;
+    };
+  }, [gender]);
 
   const draw = useCallback(() => {
     // Tab visibility check - skip rendering when tab is hidden
@@ -139,36 +151,48 @@ export default function WorldExplore() {
     // Draw player avatar
     const px = posRef.current.x * cw;
     const py = posRef.current.y * ch;
-    const avatarSize = Math.floor(cw * 0.025);
     frameRef.current += 1;
 
-    // Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.beginPath();
-    ctx.ellipse(px, py + avatarSize + 2, avatarSize * 0.8, avatarSize * 0.3, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Body
-    ctx.fillStyle = '#4ade80';
-    ctx.fillRect(px - avatarSize / 2, py - avatarSize / 2, avatarSize, avatarSize);
-
-    // Head
-    ctx.fillStyle = '#fbbf24';
-    ctx.fillRect(px - avatarSize * 0.4, py - avatarSize * 1.1, avatarSize * 0.8, avatarSize * 0.7);
-
-    // Eyes
-    ctx.fillStyle = '#111';
-    const blinkCycle = frameRef.current % 180;
-    if (blinkCycle < 170) {
-      ctx.fillRect(px - avatarSize * 0.2, py - avatarSize * 0.85, 2, 2);
-      ctx.fillRect(px + avatarSize * 0.1, py - avatarSize * 0.85, 2, 2);
+    // Walking animation - bob
+    let bob = 0;
+    if (keys.size > 0) {
+      bob = Math.sin(frameRef.current * 0.25) * 3;
     }
 
-    // Walking animation - bob
-    if (keys.size > 0) {
-      const bob = Math.sin(frameRef.current * 0.3) * 2;
+    if (playerImgRef.current && playerImgRef.current.complete) {
+      const img = playerImgRef.current;
+      const aspectRatio = img.naturalWidth / img.naturalHeight;
+      const avatarHeight = Math.floor(cw * 0.055);
+      const avatarWidth = avatarHeight * aspectRatio;
+      
+      // Shadow centered at feet (feet are at py + 8)
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(px, py + 8, avatarWidth * 0.45, avatarWidth * 0.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.drawImage(
+        img,
+        px - avatarWidth / 2,
+        py - avatarHeight + 8 + bob,
+        avatarWidth,
+        avatarHeight
+      );
+    } else {
+      const avatarSize = Math.floor(cw * 0.025);
+      // Fallback: Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.beginPath();
+      ctx.ellipse(px, py + avatarSize + 2, avatarSize * 0.8, avatarSize * 0.3, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Fallback: Body
       ctx.fillStyle = '#4ade80';
       ctx.fillRect(px - avatarSize / 2, py - avatarSize / 2 + bob, avatarSize, avatarSize);
+
+      // Fallback: Head
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(px - avatarSize * 0.4, py - avatarSize * 1.1 + bob, avatarSize * 0.8, avatarSize * 0.7);
     }
 
     // Draw minimap

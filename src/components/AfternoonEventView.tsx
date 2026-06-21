@@ -11,6 +11,8 @@ export default function AfternoonEventView() {
   const submitAfternoonChoice = useGameStore((s) => s.submitAfternoonChoice);
   const dayScore = useGameStore((s) => s.dayScore);
   const currentDayIndex = useGameStore((s) => s.currentDayIndex);
+  const username = useGameStore((s) => s.username);
+  const gender = useGameStore((s) => s.gender);
   const worldState = useGameStore((s) => s.worldState);
 
   const [showCard, setShowCard] = useState(false);
@@ -60,6 +62,15 @@ export default function AfternoonEventView() {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {gender && (
+            <img 
+              src={gender === 'male' ? '/assets/Male_Character.png' : '/assets/FemaleCharacter.png'} 
+              alt="Avatar" 
+              className="w-5 h-5 object-contain rounded-full border border-[#4ade80] bg-[#0a1a0f]"
+            />
+          )}
+          <span style={{ color: '#e8f5e9' }} className="mr-1">{username}</span>
+          <span style={{ color: '#fbbf24' }}>|</span>
           <span>{tierVisuals.emoji}</span>
           <span style={{ color: '#a3c4ab' }}>{tierVisuals.label}</span>
         </div>
@@ -100,23 +111,35 @@ export default function AfternoonEventView() {
 
             {/* Card */}
             {showCard && (
-              <div className="dialogue-box animate-fade-in mb-4" style={{ borderColor: '#fbbf24' }}>
-                <h3
-                  className="text-sm mb-3"
-                  style={{
-                    fontFamily: "'Press Start 2P', monospace",
-                    color: '#fbbf24',
-                    textShadow: '0 0 10px rgba(251, 191, 36, 0.3)',
-                  }}
-                >
-                  {event.title}
-                </h3>
-                <p
-                  className="text-2xl"
-                  style={{ fontFamily: "'VT323', monospace", color: '#e8f5e9' }}
-                >
-                  {event.prompt}
-                </p>
+              <div className="dialogue-box animate-fade-in mb-4 flex gap-4 items-center" style={{ borderColor: '#fbbf24' }}>
+                {gender && (
+                  <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 border-2 border-[#fbbf24] bg-[#0a1a0f] overflow-hidden flex items-center justify-center p-1 rounded shadow-inner">
+                    <img
+                      src={gender === 'male' ? '/assets/Male_Character.png' : '/assets/FemaleCharacter.png'}
+                      alt="Player portrait"
+                      className="w-full h-full object-contain"
+                      style={{ imageRendering: 'pixelated' }}
+                    />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <h3
+                    className="text-sm mb-3"
+                    style={{
+                      fontFamily: "'Press Start 2P', monospace",
+                      color: '#fbbf24',
+                      textShadow: '0 0 10px rgba(251, 191, 36, 0.3)',
+                    }}
+                  >
+                    {event.title}
+                  </h3>
+                  <p
+                    className="text-2xl"
+                    style={{ fontFamily: "'VT323', monospace", color: '#e8f5e9' }}
+                  >
+                    {event.prompt}
+                  </p>
+                </div>
               </div>
             )}
 

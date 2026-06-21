@@ -35,7 +35,8 @@ export default function SceneView() {
   const worldState = useGameStore((s) => s.worldState);
   const isTransitioning = useGameStore((s) => s.isTransitioning);
   const getCurrentSceneId = useGameStore((s) => s.getCurrentSceneId);
-  
+  const username = useGameStore((s) => s.username);
+  const gender = useGameStore((s) => s.gender);
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [showChoices, setShowChoices] = useState(false);
@@ -105,6 +106,15 @@ export default function SceneView() {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {gender && (
+            <img 
+              src={gender === 'male' ? '/assets/Male_Character.png' : '/assets/FemaleCharacter.png'} 
+              alt="Avatar" 
+              className="w-5 h-5 object-contain rounded-full border border-[#4ade80] bg-[#0a1a0f]"
+            />
+          )}
+          <span style={{ color: '#e8f5e9' }} className="mr-1">{username}</span>
+          <span style={{ color: '#fbbf24' }}>|</span>
           <span>{tierVisuals.emoji}</span>
           <span style={{ color: '#a3c4ab' }}>{tierVisuals.label}</span>
         </div>
@@ -146,13 +156,25 @@ export default function SceneView() {
         <div className="absolute bottom-0 left-0 right-0 z-10 p-4 md:p-6 max-w-2xl mx-auto w-full">
           {/* Prompt */}
           {showPrompt && (
-            <div className="dialogue-box mb-4 animate-fade-in">
-              <p
-                className="text-xl md:text-2xl leading-relaxed"
-                style={{ fontFamily: "'VT323', monospace", color: '#e8f5e9' }}
-              >
-                {currentStep.prompt}
-              </p>
+            <div className="dialogue-box mb-4 animate-fade-in flex gap-4 items-center">
+              {gender && (
+                <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 border-2 border-[#4ade80] bg-[#0a1a0f] overflow-hidden flex items-center justify-center p-1 rounded shadow-inner">
+                  <img
+                    src={gender === 'male' ? '/assets/Male_Character.png' : '/assets/FemaleCharacter.png'}
+                    alt="Player portrait"
+                    className="w-full h-full object-contain"
+                    style={{ imageRendering: 'pixelated' }}
+                  />
+                </div>
+              )}
+              <div className="flex-1">
+                <p
+                  className="text-xl md:text-2xl leading-relaxed"
+                  style={{ fontFamily: "'VT323', monospace", color: '#e8f5e9' }}
+                >
+                  {currentStep.prompt}
+                </p>
+              </div>
             </div>
           )}
 
